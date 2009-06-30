@@ -2,6 +2,7 @@
 
 use strict;
 
+use lib '../lib';
 use Tie::Hash::Expire;
 
 sub print_defined
@@ -29,7 +30,7 @@ $foo{i} = 1;
 $foo{j} = 2;
 $foo{k} = 3;
 
-sleep(3);
+sleep(2);
 
 print_defined(\%foo, 'i');
 
