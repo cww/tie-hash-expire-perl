@@ -5,21 +5,54 @@ use strict;
 use Test::More;
 use Tie::Hash::Expire;
 
-use constant NUM_TESTS => 30;
+eval 'use List::Util qw(sum);';
 
-plan tests => NUM_TESTS;
-
-tie my %foo => 'Tie::Hash::Expire';
-
-for (my $i = 0; $i < NUM_TESTS; ++$i)
+if ($@)
 {
-    $foo{"zzz${i}zzz"} = $i * 2;
+    plan skip_all => 'List::Util is required for testing basic hash ' .
+                     'functionality.';
 }
 
-for (my $i = 0; $i < NUM_TESTS; ++$i)
+our %num_tests;
+
+$num_tests{basic_mutate} = 3;
+sub basic_mutate
 {
-    is($foo{"zzz${i}zzz"}, $i * 2, "Basic functionality: $i / " . NUM_TESTS);
+    tie my %foo => 'Tie::Hash::Expire';
+
+    for (my $i = 0; $i < 3; ++$i)
+    {
+        $foo{$i} = $i + 1;
+    }
+
+    for (my $i = 0; $i < 3; ++$i)
+    {
+        is($foo{$i}, $i + 1, "Basic mutate: $i / $num_tests{basic_mutate}");
+    }
 }
+
+$num_tests{basic_delete} = 3;
+sub basic_delete
+{
+    tie my %foo => 'Tie::Hash::Expire';
+
+    for (my $i = 0; $i < 3; ++$i)
+    {
+        $foo{$i} = $i + 1;
+    }
+
+    for (my $i = 0; $i < 3; ++$i)
+    {
+        delete $foo{$i};
+        is($foo{$i}, undef, "Basic delete: $i / $num_tests{basic_delete}");
+    }
+}
+
+plan tests => sum(values %num_tests);
+
+basic_mutate();
+basic_delete();
+
 =cut
 sub print_defined
 {

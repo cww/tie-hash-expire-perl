@@ -6,6 +6,8 @@ use strict;
 use Carp;
 use Tie::Hash;
 
+use constant CHECK_FOR_HIRES => 1;
+
 our @ISA = qw(Tie::Hash);
 
 =head1 NAME
@@ -38,14 +40,14 @@ our $VERSION = '0.01';
 
 BEGIN
 {
-    eval
+    if (CHECK_FOR_HIRES)
     {
-        require Time::HiRes;
-    };
+        eval 'use Time::HiRes';
 
-    if (!$@)
-    {
-        Time::HiRes->import('time');
+        if (!$@)
+        {
+            Time::HiRes->import('time');
+        }
     }
 }
 
@@ -53,7 +55,8 @@ sub _is_expired
 {
     my ($self, $key) = @_;
 
-    return $self->{EXPIRE}->{$key} <= time();
+    #return $self->{EXPIRE}->{$key} <= time();
+    return $self->{EXPIRE}->{$key} <= $self->{TIMEFUNC}->();
 }
 
 sub _delete
@@ -140,6 +143,7 @@ sub TIEHASH
         HASH            => {},
         EXPIRE          => {},
         SCHEDULE_DELETE => {},
+        TIMEFUNC        => defined $args{TIMEFUNC} ? $args{TIMEFUNC} : \&time,
     );
 
     return bless \%node, $self;
@@ -170,7 +174,8 @@ sub STORE
     my ($self, $key, $value) = @_;
 
     $self->{HASH}->{$key} = $value;
-    $self->{EXPIRE}->{$key} = time() + $self->{LIFETIME};
+    #$self->{EXPIRE}->{$key} = time() + $self->{LIFETIME};
+    $self->{EXPIRE}->{$key} = $self->{TIMEFUNC}->() + $self->{LIFETIME};
     delete $self->{SCHEDULE_DELETE}->{$key};
 }
 
