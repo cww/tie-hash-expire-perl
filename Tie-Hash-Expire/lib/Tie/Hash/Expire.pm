@@ -3,16 +3,15 @@ package Tie::Hash::Expire;
 use warnings;
 use strict;
 
+use base 'Tie::Hash';
+
 use Carp;
-use Tie::Hash;
 
 use constant CHECK_FOR_HIRES => 1;
 
-our @ISA = qw(Tie::Hash);
-
 =head1 NAME
 
-Tie::Hash::Expire - The great new Tie::Hash::Expire!
+Tie::Hash::Expire - A tied hash object with key/value pairs that expire.
 
 =head1 VERSION
 
@@ -20,19 +19,12 @@ Version 0.01
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
-
     use Tie::Hash::Expire;
 
-    my $foo = Tie::Hash::Expire->new();
-    ...
-
-=head1 EXPORT
-
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
+    tie my %foo => 'Tie::Hash::Expire', LIFETIME => 10;
+    $foo{bar} = 1;
+    sleep(11);
+    # $foo{bar} no longer exists.
 
 =cut
 
@@ -291,6 +283,12 @@ for my $f (qw(SCALAR FIRSTKEY))
         };
     };
 }
+
+=head1 CAVEATS
+
+This module will attempt to use the time() from Time::HiRes if that module can
+be found.  Otherwise, it will fall back to the core Perl time() function,
+which does not provide sub-second accuracy.
 
 =head1 AUTHOR
 
