@@ -2,9 +2,25 @@
 
 use strict;
 
-use lib '../lib';
+use Test::More;
 use Tie::Hash::Expire;
 
+use constant NUM_TESTS => 30;
+
+plan tests => NUM_TESTS;
+
+tie my %foo => 'Tie::Hash::Expire';
+
+for (my $i = 0; $i < NUM_TESTS; ++$i)
+{
+    $foo{"zzz${i}zzz"} = $i * 2;
+}
+
+for (my $i = 0; $i < NUM_TESTS; ++$i)
+{
+    is($foo{"zzz${i}zzz"}, $i * 2, "Basic functionality: $i / " . NUM_TESTS);
+}
+=cut
 sub print_defined
 {
     my ($hash_ref, $key) = @_;
