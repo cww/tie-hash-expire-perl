@@ -47,7 +47,6 @@ sub _is_expired
 {
     my ($self, $key) = @_;
 
-    #return $self->{EXPIRE}->{$key} <= time();
     return $self->{EXPIRE}->{$key} <= $self->{TIMEFUNC}->();
 }
 
@@ -166,7 +165,6 @@ sub STORE
     my ($self, $key, $value) = @_;
 
     $self->{HASH}->{$key} = $value;
-    #$self->{EXPIRE}->{$key} = time() + $self->{LIFETIME};
     $self->{EXPIRE}->{$key} = $self->{TIMEFUNC}->() + $self->{LIFETIME};
     delete $self->{SCHEDULE_DELETE}->{$key};
 }
