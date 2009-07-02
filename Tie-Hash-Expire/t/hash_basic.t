@@ -15,7 +15,7 @@ sub sum(@)
     return $sum;
 }
 
-our %num_tests;
+my %num_tests;
 
 # Exercises SCALAR.
 $num_tests{basic_scalar} = 3;
@@ -156,7 +156,7 @@ sub basic_firstkey_nextkey
 {
     tie my %foo => 'Tie::Hash::Expire';
 
-    my $num_high = 100;
+    my $num_high = 16;
 
     for (my $i = 0; $i < $num_high; ++$i)
     {
@@ -180,6 +180,30 @@ sub basic_firstkey_nextkey
     is(scalar(@nums), 0, 'Basic fill/purge with verify for FIRSTKEY+NEXTKEY');
 }
 
+# Exercises FIRSTKEY, NEXTKEY, and DELETE via each().
+$num_tests{basic_each} = 9;
+sub basic_each
+{
+    tie my %foo => 'Tie::Hash::Expire';
+
+    my $num_high = 8;
+
+    for (my $i = 0; $i < $num_high; ++$i)
+    {
+        $foo{$i} = $i * 2;
+    }
+
+    my $i = 0;
+    while (my $key = each %foo)
+    {
+        is($foo{$key}, $key * 2, "Basic each(): $i");
+        delete $foo{$key};
+        ++$i;
+    }
+
+    is(scalar(keys %foo), 0, 'Basic each() scalar test');
+}
+
 plan tests => sum(values %num_tests);
 
 basic_scalar();
@@ -189,3 +213,4 @@ basic_delete();
 basic_delete_exists();
 basic_clear();
 basic_firstkey_nextkey();
+basic_each();
