@@ -284,6 +284,13 @@ for my $f qw(SCALAR FIRSTKEY)
 
 =head1 CAVEATS
 
+If the user does not explicitly provide a function for TIMEFUNC, this module
+will use the Perl time() function to determine whether a key-value pair is
+expired.  This means that any oddities in the system clock may unexpectedly
+affect the performance of this module.  In particular, if a service such as
+NTP regularly sets the system time and happens to frequently compensate for
+significant clock drift, unexpected results will definitely occur.
+
 This module will attempt to use the time() from Time::HiRes if that module can
 be found.  Otherwise, it will fall back to the core Perl time() function,
 which does not provide sub-second accuracy.
