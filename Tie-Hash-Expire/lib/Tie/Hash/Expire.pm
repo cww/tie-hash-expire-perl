@@ -54,6 +54,7 @@ sub _delete
 {
     my ($self, $key) = @_;
 
+    # XXX
     print "DELETE [$key]\n";
 
     delete $self->{HASH}->{$key};
@@ -67,6 +68,7 @@ sub _delete_scheduled
 
     for my $key (keys %{$self->{SCHEDULE_DELETE}})
     {
+        # XXX
         print "DELETE SCHEDULED [$key]\n";
         $self->_delete($key);
     }
@@ -78,6 +80,7 @@ sub _update_cache
 {
     my ($self, $key) = @_;
 
+    # XXX
     print "UPDATE [$key]\n";
 
     if ($self->_is_expired($key))
