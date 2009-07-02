@@ -253,7 +253,7 @@ sub NEXTKEY
 }
 
 # Integrate cache expiry via the symbol table.
-for my $f (qw(FETCH EXISTS))
+for my $f qw(FETCH EXISTS)
 {
     eval qq
     {
@@ -268,7 +268,7 @@ for my $f (qw(FETCH EXISTS))
 }
 
 # Integrate scheduled deletion via the symbol table.
-for my $f (qw(SCALAR FIRSTKEY))
+for my $f qw(SCALAR FIRSTKEY)
 {
     eval qq
     {
