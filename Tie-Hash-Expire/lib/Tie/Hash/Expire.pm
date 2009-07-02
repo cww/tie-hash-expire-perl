@@ -59,22 +59,22 @@ sub _delete
 
     delete $self->{HASH}->{$key};
     delete $self->{EXPIRE}->{$key};
-    delete $self->{SCHEDULE_DELETE}->{$key};
+    #delete $self->{SCHEDULE_DELETE}->{$key};
 }
 
-sub _delete_scheduled
-{
-    my ($self) = @_;
-
-    for my $key (keys %{$self->{SCHEDULE_DELETE}})
-    {
-        # XXX
-        print "DELETE SCHEDULED [$key]\n";
-        $self->_delete($key);
-    }
-
-    $self->{SCHEDULE_DELETE} = {};
-}
+#sub _delete_scheduled
+#{
+#    my ($self) = @_;
+#
+#    for my $key (keys %{$self->{SCHEDULE_DELETE}})
+#    {
+#        # XXX
+#        print "DELETE SCHEDULED [$key]\n";
+#        $self->_delete($key);
+#    }
+#
+#    $self->{SCHEDULE_DELETE} = {};
+#}
 
 sub _update_cache
 {
@@ -95,11 +95,9 @@ sub _next_key
 
     while (my $key = each(%{$self->{HASH}}))
     {
-        # If we find an expired key, we can't delete it right away because
-        # we'd risk messing up the order of each().  Schedule it for later.
         if ($self->_is_expired($key))
         {
-            $self->{SCHEDULE_DELETE}->{$key} = 1;
+            $self->_delete($key);
         }
         else
         {
@@ -136,7 +134,7 @@ sub TIEHASH
         LIFETIME        => $args{LIFETIME},
         HASH            => {},
         EXPIRE          => {},
-        SCHEDULE_DELETE => {},
+        #SCHEDULE_DELETE => {},
         TIMEFUNC        => defined $args{TIMEFUNC} ? $args{TIMEFUNC} : \&time,
     );
 
@@ -169,7 +167,7 @@ sub STORE
 
     $self->{HASH}->{$key} = $value;
     $self->{EXPIRE}->{$key} = $self->{TIMEFUNC}->() + $self->{LIFETIME};
-    delete $self->{SCHEDULE_DELETE}->{$key};
+    #delete $self->{SCHEDULE_DELETE}->{$key};
 }
 
 =head2 EXISTS
@@ -197,7 +195,7 @@ sub CLEAR
 
     $self->{HASH} = {};
     $self->{EXPIRE} = {};
-    $self->{SCHEDULE_DELETE} = {};
+    #$self->{SCHEDULE_DELETE} = {};
 }
 
 =head2 DELETE
@@ -271,19 +269,19 @@ for my $f qw(FETCH EXISTS)
 }
 
 # Integrate scheduled deletion via the symbol table.
-for my $f qw(SCALAR FIRSTKEY)
-{
-    eval qq
-    {
-        *Tie::Hash::Expire::_unsched_$f = *Tie::Hash::Expire::$f;
-        undef *Tie::Hash::Expire::$f;
-        *Tie::Hash::Expire::$f = sub
-        {
-            \$_[0]->_delete_scheduled();
-            &_unsched_$f;
-        };
-    };
-}
+#for my $f qw(SCALAR FIRSTKEY)
+#{
+#    eval qq
+#    {
+#        *Tie::Hash::Expire::_unsched_$f = *Tie::Hash::Expire::$f;
+#        undef *Tie::Hash::Expire::$f;
+#        *Tie::Hash::Expire::$f = sub
+#        {
+#            \$_[0]->_delete_scheduled();
+#            &_unsched_$f;
+#        };
+#    };
+#}
 
 =head1 CAVEATS
 
