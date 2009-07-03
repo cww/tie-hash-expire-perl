@@ -34,17 +34,6 @@ sub my_time_closure
 }
 
 my %num_tests;
-my $my_time;
-my $my_time_func = sub
-{
-    return $my_time;
-};
-
-
-sub _incr($)
-{
-    $my_time += $_[0];
-}
 
 # Exercises STORE and FETCH without expiry.
 $num_tests{basic_no_expiry} = 1;
