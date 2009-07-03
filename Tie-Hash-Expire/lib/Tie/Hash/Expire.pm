@@ -11,20 +11,43 @@ use constant CHECK_FOR_HIRES => 1;
 
 =head1 NAME
 
-Tie::Hash::Expire - A tied hash object with key/value pairs that expire.
-
-=head1 VERSION
-
-Version 0.01
+Tie::Hash::Expire - A tied hash object with key-value pairs that expire.
 
 =head1 SYNOPSIS
 
     use Tie::Hash::Expire;
 
+    # Use the default time() function from the system or from Time::HiRes if
+    # that module is available.
     tie my %foo => 'Tie::Hash::Expire', LIFETIME => 10;
     $foo{bar} = 1;
     sleep(11);
     # $foo{bar} no longer exists.
+
+    # Use a manual, counter-style time function.
+    sub my_time_closure
+    {
+        my $my_time = 0;
+
+        return sub
+        {
+            my ($add) = @_;
+
+            if (defined $add)
+            {
+                $my_time += $add;
+            }
+
+            return $my_time;
+        };
+    }
+    my $f = my_time_closure();
+    tie my %bar => 'Tie::Hash::Expire', TIMEFUNC => $f, LIFETIME => 10;
+    $bar{a} = 1;
+    $f->(9);
+    # $bar{a} still exists.
+    $f->(1);
+    # $bar{a} no longer exists.
 
 =cut
 
