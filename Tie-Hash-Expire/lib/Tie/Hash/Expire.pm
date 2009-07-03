@@ -7,8 +7,6 @@ use base 'Tie::Hash';
 
 use Carp;
 
-use constant CHECK_FOR_HIRES => 1;
-
 =head1 NAME
 
 Tie::Hash::Expire - A tied hash object with key-value pairs that expire.
@@ -23,6 +21,9 @@ Tie::Hash::Expire - A tied hash object with key-value pairs that expire.
     $foo{bar} = 1;
     sleep(10);
     # $foo{bar} no longer exists.
+
+    # Explicitly do not try to import Time::HiRes::time().
+    tie my %bar => 'Tie::Hash::Expire', HIRES => 0, LIFETIME => 10;
 
     # Use a manual, counter-style time function.
     sub my_time_closure
@@ -42,35 +43,28 @@ Tie::Hash::Expire - A tied hash object with key-value pairs that expire.
         };
     }
     my $f = my_time_closure();
-    tie my %bar => 'Tie::Hash::Expire', TIMEFUNC => $f, LIFETIME => 10;
+    tie my %baz => 'Tie::Hash::Expire', TIMEFUNC => $f, LIFETIME => 10;
     $bar{a} = 1;
     $f->(9);
     # $bar{a} still exists.
     $f->(1);
     # $bar{a} no longer exists.
 
+    # If you don't specify a LIFETIME or if your LIFETIME is <= 0, then you
+    # just get an ordinary (i.e. not tied to anything) hash back.
+    tie my %qux => 'Tie::Hash::Expire', LIFETIME => 0;
+    # %qux is just an empty list: ().
+
 =cut
 
 our $VERSION = '0.01';
-
-BEGIN
-{
-    if (CHECK_FOR_HIRES)
-    {
-        eval 'use Time::HiRes';
-
-        if (!$@)
-        {
-            Time::HiRes->import('time');
-        }
-    }
-}
 
 sub _is_expired
 {
     my ($self, $key) = @_;
 
-    return $self->{EXPIRE}->{$key} <= $self->{TIMEFUNC}->();
+    return exists $self->{HASH}->{$key} &&
+           $self->{EXPIRE}->{$key} <= $self->{TIMEFUNC}->();
 }
 
 sub _delete
@@ -125,6 +119,35 @@ sub TIEHASH
 {
     my ($self, %args) = @_;
 
+    my $hires = defined $args{HIRES} ? $args{HIRES} : 1;
+    my $timefunc = $args{TIMEFUNC};
+
+    # Only bother defining a timefunc if the user didn't supply one.
+    if (!defined $timefunc)
+    {
+        # Check to see if we should consider Time::HiRes.
+        if ($hires)
+        {
+            eval
+            {
+                require Time::HiRes;
+            };
+
+            # Define a new $timefunc using Time::HiRes.
+            if (!$@)
+            {
+                Time::HiRes->import('time');
+                $timefunc = sub() { return Time::HiRes::time(); };
+            }
+        }
+
+        # We didn't get a $hires function; use the core time().
+        if (!defined $timefunc)
+        {
+            $timefunc = sub() { return time(); };
+        }
+    }
+
     if (!defined $args{LIFETIME} || $args{LIFETIME} <= 0)
     {
         # Just use a real hash, will you?  It'll be faster!
@@ -136,7 +159,7 @@ sub TIEHASH
         LIFETIME        => $args{LIFETIME},
         HASH            => {},
         EXPIRE          => {},
-        TIMEFUNC        => defined $args{TIMEFUNC} ? $args{TIMEFUNC} : \&time,
+        TIMEFUNC        => $timefunc,
     );
 
     return bless \%node, $self;
@@ -279,6 +302,10 @@ significant clock drift, unexpected results will definitely occur.
 This module will attempt to use the time() from Time::HiRes if that module can
 be found.  Otherwise, it will fall back to the core Perl time() function,
 which does not provide sub-second accuracy.
+
+Tie::Hash::Expire does not inherently understand the concept of a non-expiring
+hash; however, if it's absolutely necessary to implement one of these with
+Tie::Hash::Expire, a TIMEFUNC that returns a constant could be used.
 
 =head1 AUTHOR
 
