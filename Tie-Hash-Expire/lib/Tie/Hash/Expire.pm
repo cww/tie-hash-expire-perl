@@ -21,7 +21,7 @@ Tie::Hash::Expire - A tied hash object with key-value pairs that expire.
     # that module is available.
     tie my %foo => 'Tie::Hash::Expire', LIFETIME => 10;
     $foo{bar} = 1;
-    sleep(11);
+    sleep(10);
     # $foo{bar} no longer exists.
 
     # Use a manual, counter-style time function.
@@ -77,34 +77,13 @@ sub _delete
 {
     my ($self, $key) = @_;
 
-    # XXX
-    print "DELETE [$key]\n";
-
     delete $self->{HASH}->{$key};
     delete $self->{EXPIRE}->{$key};
-    #delete $self->{SCHEDULE_DELETE}->{$key};
 }
-
-#sub _delete_scheduled
-#{
-#    my ($self) = @_;
-#
-#    for my $key (keys %{$self->{SCHEDULE_DELETE}})
-#    {
-#        # XXX
-#        print "DELETE SCHEDULED [$key]\n";
-#        $self->_delete($key);
-#    }
-#
-#    $self->{SCHEDULE_DELETE} = {};
-#}
 
 sub _update_cache
 {
     my ($self, $key) = @_;
-
-    # XXX
-    print "UPDATE [$key]\n";
 
     if ($self->_is_expired($key))
     {
@@ -157,7 +136,6 @@ sub TIEHASH
         LIFETIME        => $args{LIFETIME},
         HASH            => {},
         EXPIRE          => {},
-        #SCHEDULE_DELETE => {},
         TIMEFUNC        => defined $args{TIMEFUNC} ? $args{TIMEFUNC} : \&time,
     );
 
@@ -190,7 +168,6 @@ sub STORE
 
     $self->{HASH}->{$key} = $value;
     $self->{EXPIRE}->{$key} = $self->{TIMEFUNC}->() + $self->{LIFETIME};
-    #delete $self->{SCHEDULE_DELETE}->{$key};
 }
 
 =head2 EXISTS
@@ -218,7 +195,6 @@ sub CLEAR
 
     $self->{HASH} = {};
     $self->{EXPIRE} = {};
-    #$self->{SCHEDULE_DELETE} = {};
 }
 
 =head2 DELETE
@@ -290,21 +266,6 @@ for my $f qw(FETCH EXISTS)
         };
     };
 }
-
-# Integrate scheduled deletion via the symbol table.
-#for my $f qw(SCALAR FIRSTKEY)
-#{
-#    eval qq
-#    {
-#        *Tie::Hash::Expire::_unsched_$f = *Tie::Hash::Expire::$f;
-#        undef *Tie::Hash::Expire::$f;
-#        *Tie::Hash::Expire::$f = sub
-#        {
-#            \$_[0]->_delete_scheduled();
-#            &_unsched_$f;
-#        };
-#    };
-#}
 
 =head1 CAVEATS
 
