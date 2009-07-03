@@ -73,12 +73,12 @@ sub basic_exists
 {
     tie my %foo => 'Tie::Hash::Expire';
 
-    is(exists $foo{a} ? 1 : 0, 0, 'Basic EXISTS: new hash');
+    ok(!exists $foo{a}, 'Basic EXISTS: new hash');
 
     $foo{a} = 'bar';
 
-    is(exists $foo{a} ? 1 : 0, 1, 'Basic EXISTS: existent element');
-    is(exists $foo{b} ? 1 : 0, 0, 'Basic EXISTS: non-existent element');
+    ok(exists $foo{a}, 'Basic EXISTS: existent element');
+    ok(!exists $foo{b}, 'Basic EXISTS: non-existent element');
 }
 
 # Exercises DELETE.
@@ -110,23 +110,23 @@ sub basic_delete_exists
     $foo{a} = 'bar';
     $foo{b} = 'baz';
 
-    is(exists $foo{a} ? 1 : 0, 1,
+    ok(exists $foo{a},
        'Basic DELETE+EXISTS: existent element "a" (zero non-existent)');
-    is(exists $foo{b} ? 1 : 0, 1,
+    ok(exists $foo{b},
        'Basic DELETE+EXISTS: existent element "b" (zero non-existent)');
 
     delete $foo{a};
     
-    is(exists $foo{a} ? 1 : 0, 0,
+    ok(!exists $foo{a},
        'Basic DELETE+EXISTS: non-existent element "a" (one non-existent)');
-    is(exists $foo{b} ? 1 : 0, 1,
+    ok(exists $foo{b},
        'Basic DELETE+EXISTS: existent element "b" (one non-existent)');
 
     delete $foo{b};
     
-    is(exists $foo{a} ? 1 : 0, 0,
+    ok(!exists $foo{a},
        'Basic DELETE+EXISTS: non-existent element "a" (both non-existent)');
-    is(exists $foo{b} ? 1 : 0, 0,
+    ok(!exists $foo{b},
        'Basic DELETE+EXISTS: non-existent element "b" (both non-existent)');
 
     is(scalar(keys %foo), 0, 'Basic complete DELETE+EXISTS test');

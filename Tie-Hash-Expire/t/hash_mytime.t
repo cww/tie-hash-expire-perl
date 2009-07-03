@@ -58,7 +58,7 @@ sub basic_expiry
     $f->(2);
     is($foo{a}, 'bar', 'Defined LIFETIME, pre-expiry (simple)');
     $f->(2);
-    is(exists $foo{a} ? 1 : 0, 0, 'Defined LIFETIME, post-expiry (simple)');
+    ok(!exists $foo{a}, 'Defined LIFETIME, post-expiry (simple)');
 }
 
 # Exercises STORE and FETCH while resetting values.
@@ -75,7 +75,7 @@ sub expiry_reset
     $f->(7);
     is($foo{a}, 'baz', 'Defined LIFETIME, post-reset');
     $f->(1);
-    is(exists $foo{a} ? 1 : 0, 0, 'Defined LIFETIME, post-expiry');
+    ok(!exists $foo{a}, 'Defined LIFETIME, post-expiry');
 }
 
 # Exercises STORE and FETCH while resetting values, with multiple elements.
@@ -93,13 +93,10 @@ sub expiry_reset_multiple
     is($foo{a}, 'bar', 'Defined LIFETIME, pre-expiry (multiple #1)');
     is($foo{b}, 'qux', 'Defined LIFETIME, pre-expiry (multiple #2)');
     $f->(2);
-    is(exists $foo{a} ? 1 : 0, 0,
-       'Defined LIFETIME, post-expiry (multiple #1)');
-    is(exists $foo{b} ? 1 : 0, 1,
-       'Defined LIFETIME, not-quite-post-expiry (multiple #2)');
+    ok(!exists $foo{a}, 'Defined LIFETIME, post-expiry (multiple #1)');
+    ok(exists $foo{b}, 'Defined LIFETIME, near-expiry (multiple #2)');
     $f->(4);
-    is(exists $foo{b} ? 1 : 0, 0,
-       'Defined LIFETIME, post-expiry (multiple #2)');
+    ok(!exists $foo{b}, 'Defined LIFETIME, post-expiry (multiple #2)');
 }
 
 plan tests => sum(values %num_tests);
