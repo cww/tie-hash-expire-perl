@@ -23,15 +23,15 @@ sub basic_scalar
 {
     tie my %foo => 'Tie::Hash::Expire';
 
-    is(scalar(keys %foo), 0, 'Basic SCALAR: zero elements');
+    is(scalar(%foo), '0', 'Basic SCALAR: zero elements');
 
     $foo{a} = 'bar';
 
-    is(scalar(keys %foo), 1, 'Basic SCALAR: one element');
+    like(scalar(%foo), qr|^1/|, 'Basic SCALAR: one element');
 
     $foo{b} = 'baz';
 
-    is(scalar(keys %foo), 2, 'Basic SCALAR: two elements');
+    like(scalar(%foo), qr|^2/|, 'Basic SCALAR: two elements');
 }
 
 # Exercises STORE and FETCH.
@@ -45,14 +45,14 @@ sub basic_store_fetch
         $foo{$i} = $i + 1;
     }
 
-    is(scalar(keys %foo), 3, 'Basic STORE: three elements');
+    like(scalar(%foo), qr|^3/|, 'Basic STORE: three elements');
 
     for (my $i = 0; $i < 3; ++$i)
     {
         is($foo{$i}, $i + 1, "Basic FETCH: element $i");
     }
 
-    is(scalar(keys %foo), 3, 'Basic STORE: three elements after FETCH');
+    like(scalar(%foo), qr|^3/|, 'Basic STORE: three elements after FETCH');
 
     $foo{a} = 'bar';
 
@@ -98,7 +98,7 @@ sub basic_delete
         is($foo{$i}, undef, "Basic DELETE: element $i");
     }
 
-    is(scalar(keys %foo), 0, 'Basic complete DELETE test');
+    is(scalar(%foo), 0, 'Basic complete DELETE test');
 }
 
 # Exercises DELETE and EXISTS.
@@ -129,7 +129,7 @@ sub basic_delete_exists
     ok(!exists $foo{b},
        'Basic DELETE+EXISTS: non-existent element "b" (both non-existent)');
 
-    is(scalar(keys %foo), 0, 'Basic complete DELETE+EXISTS test');
+    is(scalar(%foo), 0, 'Basic complete DELETE+EXISTS test');
 }
 
 # Exercises CLEAR.
@@ -147,7 +147,7 @@ sub basic_clear
     };
 
     is($@, q{}, 'Basic CLEAR exception test');
-    is(scalar(keys %foo), 0, 'Basic CLEAR scalar test');
+    is(scalar(%foo), 0, 'Basic CLEAR scalar test');
 }
 
 # Exercises FIRSTKEY and NEXTKEY.
@@ -201,7 +201,44 @@ sub basic_each
         ++$i;
     }
 
-    is(scalar(keys %foo), 0, 'Basic each() scalar test');
+    is(scalar(%foo), 0, 'Basic each() scalar test');
+}
+
+# Exercises NEXTKEY with DELETE before FETCH.
+$num_tests{basic_nextkey_delete_before} = 1;
+sub basic_nextkey_delete_before
+{
+    tie my %foo => 'Tie::Hash::Expire';
+
+    $foo{a} = 1;
+    $foo{b} = 2;
+
+    my $first_key = (each %foo)[0];
+
+    delete $foo{$first_key eq 'a' ? 'b' : 'a'};
+
+    my $second_key = (each %foo)[0];
+
+    is($second_key, undef, 'Basic each() with DELETE before FETCH.');
+}
+
+# Exercises NEXTKEY with DELETE after FETCH.
+$num_tests{basic_nextkey_delete_after} = 1;
+sub basic_nextkey_delete_after
+{
+    tie my %foo => 'Tie::Hash::Expire';
+
+    $foo{a} = 1;
+    $foo{b} = 2;
+
+    my $first_key = (each %foo)[0];
+
+    delete $foo{$first_key eq 'a' ? 'a' : 'b'};
+
+    my $second_key = (each %foo)[0];
+
+    is($second_key, $first_key eq 'a' ? 'b' : 'a',
+       'Basic each() with DELETE after FETCH.');
 }
 
 plan tests => sum(values %num_tests);
@@ -214,3 +251,5 @@ basic_delete_exists();
 basic_clear();
 basic_firstkey_nextkey();
 basic_each();
+basic_nextkey_delete_before();
+basic_nextkey_delete_after();

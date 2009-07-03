@@ -16,6 +16,7 @@ sub sum(@)
     return $sum;
 }
 
+# A closure to make manual time manipulation a bit easier.
 sub my_time_closure
 {
     my $my_time = 0;
@@ -99,9 +100,28 @@ sub expiry_reset_multiple
     ok(!exists $foo{b}, 'Defined LIFETIME, post-expiry (multiple #2)');
 }
 
+# Exercises FIRSTKEY with expiry before NEXTKEY.
+$num_tests{expiry_firstkey_nextkey} = 1;
+sub expiry_firstkey_nextkey
+{
+    my $f = my_time_closure();
+    tie my %foo => 'Tie::Hash::Expire', TIMEFUNC => $f, LIFETIME => 4;
+
+    $foo{a} = 1;
+    $foo{b} = 2;
+
+    $f->(3);
+    my $first_key = (each %foo)[0];
+    $f->(1);
+    my $second_key = (each %foo)[0];
+
+    is($second_key, undef, 'Expiry between FIRSTKEY and NEXTKEY.');
+}
+
 plan tests => sum(values %num_tests);
 
 basic_no_expiry();
 basic_expiry();
 expiry_reset();
 expiry_reset_multiple();
+expiry_firstkey_nextkey();
