@@ -21,7 +21,7 @@ my %num_tests;
 $num_tests{basic_scalar} = 3;
 sub basic_scalar
 {
-    tie my %foo => 'Tie::Hash::Expire';
+    tie my %foo => 'Tie::Hash::Expire', TIMEFUNC => sub { 1 }, LIFETIME => 2;
 
     is(scalar(%foo), '0', 'Basic SCALAR: zero elements');
 
@@ -38,7 +38,7 @@ sub basic_scalar
 $num_tests{basic_store_fetch} = 1 + 3 + 1 + 3;
 sub basic_store_fetch
 {
-    tie my %foo => 'Tie::Hash::Expire';
+    tie my %foo => 'Tie::Hash::Expire', TIMEFUNC => sub { 1 }, LIFETIME => 2;
 
     for (my $i = 0; $i < 3; ++$i)
     {
@@ -71,7 +71,7 @@ sub basic_store_fetch
 $num_tests{basic_exists} = 3;
 sub basic_exists
 {
-    tie my %foo => 'Tie::Hash::Expire';
+    tie my %foo => 'Tie::Hash::Expire', TIMEFUNC => sub { 1 }, LIFETIME => 2;
 
     ok(!exists $foo{a}, 'Basic EXISTS: new hash');
 
@@ -85,7 +85,7 @@ sub basic_exists
 $num_tests{basic_delete} = 3 + 1;
 sub basic_delete
 {
-    tie my %foo => 'Tie::Hash::Expire';
+    tie my %foo => 'Tie::Hash::Expire', TIMEFUNC => sub { 1 }, LIFETIME => 2;
 
     for (my $i = 0; $i < 3; ++$i)
     {
@@ -105,7 +105,7 @@ sub basic_delete
 $num_tests{basic_delete_exists} = 6 + 1;
 sub basic_delete_exists
 {
-    tie my %foo => 'Tie::Hash::Expire';
+    tie my %foo => 'Tie::Hash::Expire', TIMEFUNC => sub { 1 }, LIFETIME => 2;
 
     $foo{a} = 'bar';
     $foo{b} = 'baz';
@@ -136,7 +136,7 @@ sub basic_delete_exists
 $num_tests{basic_clear} = 2;
 sub basic_clear
 {
-    tie my %foo => 'Tie::Hash::Expire';
+    tie my %foo => 'Tie::Hash::Expire', TIMEFUNC => sub { 1 }, LIFETIME => 2;
 
     $foo{a} = 1;
     $foo{b} = 2;
@@ -154,7 +154,7 @@ sub basic_clear
 $num_tests{basic_firstkey_nextkey} = 1;
 sub basic_firstkey_nextkey
 {
-    tie my %foo => 'Tie::Hash::Expire';
+    tie my %foo => 'Tie::Hash::Expire', TIMEFUNC => sub { 1 }, LIFETIME => 2;
 
     my $num_high = 16;
 
@@ -184,7 +184,7 @@ sub basic_firstkey_nextkey
 $num_tests{basic_each} = 9;
 sub basic_each
 {
-    tie my %foo => 'Tie::Hash::Expire';
+    tie my %foo => 'Tie::Hash::Expire', TIMEFUNC => sub { 1 }, LIFETIME => 2;
 
     my $num_high = 8;
 
@@ -208,7 +208,7 @@ sub basic_each
 $num_tests{basic_nextkey_delete_before} = 1;
 sub basic_nextkey_delete_before
 {
-    tie my %foo => 'Tie::Hash::Expire';
+    tie my %foo => 'Tie::Hash::Expire', TIMEFUNC => sub { 1 }, LIFETIME => 2;
 
     $foo{a} = 1;
     $foo{b} = 2;
@@ -226,7 +226,7 @@ sub basic_nextkey_delete_before
 $num_tests{basic_nextkey_delete_after} = 1;
 sub basic_nextkey_delete_after
 {
-    tie my %foo => 'Tie::Hash::Expire';
+    tie my %foo => 'Tie::Hash::Expire', TIMEFUNC => sub { 1 }, LIFETIME => 2;
 
     $foo{a} = 1;
     $foo{b} = 2;

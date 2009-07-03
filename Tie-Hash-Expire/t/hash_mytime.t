@@ -115,7 +115,7 @@ sub expiry_firstkey_nextkey
     $f->(1);
     my $second_key = (each %foo)[0];
 
-    is($second_key, undef, 'Expiry between FIRSTKEY and NEXTKEY.');
+    is($second_key, undef, 'Expiry between FIRSTKEY and NEXTKEY');
 }
 
 plan tests => sum(values %num_tests);
